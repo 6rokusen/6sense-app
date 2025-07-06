@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8" /><title>6sense結果</title>
+<link rel="stylesheet" href="style.css" /></head>
+<body><div class="container"><h1>6sense 診断結果</h1>
+<div id="result-output"></div></div>
+<script>
+const data = JSON.parse(localStorage.getItem("sixsense_data") || "{}");
+const traits = ["孤児","幼子","王様","賢者","道化","魔法使い","創造者","破壊者","援助者","戦士","恋人","探究者"];
+const output = document.getElementById("result-output");
+
+output.innerHTML = "<h2>顕在意識順位</h2><ul>" +
+traits.map(t => `<li>${t}：${data["rank_" + t]}</li>`).join("") + "</ul>";
+
+const traitSums = {}, traitCounts = {}, traitAvgs = {};
+traits.forEach(t => { traitSums[t] = 0; traitCounts[t] = 0; });
+
+for (const [k,v] of Object.entries(data)) {
+  if (k.startsWith("q_")) {
+    const t = k.split("_")[1];
+    traitSums[t] += parseInt(v); traitCounts[t]++;
+  }
+}
+output.innerHTML += "<h2>潜在意識スコア（平均）</h2><ul>" +
+traits.map(t => `<li>${t}：${(traitSums[t]/traitCounts[t]).toFixed(2)}</li>`).join("") + "</ul>";
+</script></body></html>

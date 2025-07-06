@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>診断結果（PDF付き）</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+<div class="container">
+<h1>6sense 診断結果（PDF出力）</h1>
+<div id="pdf-area">
+<p><strong>氏名：</strong><span id="user-name"></span> ／ <strong>日付：</strong><span id="today"></span></p>
+<canvas id="radarChart" width="400" height="400"></canvas>
+<ul id="score-list"></ul></div>
+<button id="pdf-btn">PDFをダウンロード</button>
+</div>
+<script>
+const data = JSON.parse(localStorage.getItem("sixsense_data") || "{}");
+const traits = ["孤児","幼子","王様","賢者","道化","魔法使い","創造者","破壊者","援助者","戦士","恋人","探究者"];
+document.getElementById("user-name").textContent = data.name || "匿名";
+document.getElementById("today").textContent = new Date().toLocaleDateString("ja-JP");
+
+const sums = {}, counts = {}, avgs = {};
+traits.forEach(t => { sums[t]=0; counts[t]=0; });
+for (const [k,v] of Object.entries(data)) {
+  if (k.startsWith("q_")) {
+    const t = k.split("_")[1];
+    sums[t] += parseInt(v); counts[t]++;
+  }
+}
+traits.forEach(t => avgs[t] = (sums[t]/counts[t]).toFixed(2));
+
+new Chart(document.getElementById("radarChart"), {
+  type: "radar",
+  data: {
+    labels: traits,
+    datasets: [{
+      label: "潜在スコア",
+      data: traits.map(t => avgs[t]),
+      backgroundColor: "rgba(211,192,135,0.2)",
+      borderColor: "#d3c087"
+    }]
+  },
+  options: { scale: { ticks: { min: 0, max: 5 } } }
+});
+
+document.getElementById("score-list").innerHTML =
+  traits.map(t => `<li>${t}：${avgs[t]}</li>`).join("");
+
+document.getElementById("pdf-btn").addEventListener("click", () => {
+  html2pdf().set({
+    margin: 0.5,
+    filename: `6sense_${data.name || "診断結果"}.pdf`,
+    html2canvas: { scale: 2 }, jsPDF: { format: "a4" }
+  }).from(document.getElementById("pdf-area")).save();
+});
+</script>
+</body></html>

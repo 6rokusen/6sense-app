@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8" /><title>診断結果（ロール別）</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container"><h1>6sense 診断結果</h1>
+<p><strong>氏名：</strong><span id="user-name"></span></p>
+<canvas id="radarChart" width="400" height="400"></canvas>
+<div id="output-section"></div></div>
+
+<script>
+const data = JSON.parse(localStorage.getItem("sixsense_data") || "{}");
+const role = data.roleType || "personal";
+const traits = ["孤児","幼子","王様","賢者","道化","魔法使い","創造者","破壊者","援助者","戦士","恋人","探究者"];
+document.getElementById("user-name").textContent = data.name || "匿名";
+
+const sums = {}, counts = {}, avgs = {};
+traits.forEach(t => { sums[t] = 0; counts[t] = 0; });
+
+for (const [k,v] of Object.entries(data)) {
+  if (k.startsWith("q_")) {
+    const t = k.split("_")[1];
+    sums[t] += parseInt(v); counts[t]++;
+  }
+}
+traits.forEach(t => { avgs[t] = sums[t]/counts[t]; });
+
+new Chart(document.getElementById("radarChart"), {
+  type: 'radar',
+  data: {
+    labels: traits,
+    datasets: [{
+      label: "潜在意識スコア",
+      data: traits.map(t => avgs[t].toFixed(2)),
+      backgroundColor: "rgba(211,192,135,0.2)",
+      borderColor: "#d3c087"
+    }]
+  },
+  options: { scale: { ticks: { min: 0, max: 5 } } }
+});
+
+const out = document.getElementById("output-section");
+if (role === "hr") {
+  out.innerHTML = "<h2>HR向けレポート</h2><ul>" + traits.map(t => `<li>${t}：${avgs[t].toFixed(2)}</li>`).join("") + "</ul>";
+} else if (role === "coach") {
+  out.innerHTML = "<h2>コーチ向けレポート</h2><p>顧客の傾向とギャップを確認し、対話設計にご活用ください。</p>";
+  if (data.lineId) {
+    out.innerHTML += `<p><a href="https://lin.ee/${data.lineId}" target="_blank">LINEで連携</a></p>`;
+  }
+} else {
+  out.innerHTML = "<h2>個人向けレポート</h2><ul>" + traits.map(t => `<li>${t}：${avgs[t].toFixed(2)}</li>`).join("") + "</ul>";
+}
+</script></body></html>

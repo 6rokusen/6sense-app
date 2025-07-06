@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8" />
+<title>Step2: 性質順位と72問診断</title>
+<link rel="stylesheet" href="style.css" /></head>
+<body><div class="container">
+<h1>6sense診断 - Step 2/2</h1>
+
+<section><h2>12性質の自己順位（1〜12、重複不可）</h2><div id="rank-section"></div></section>
+<section><h2>72の質問に回答してください（1〜5）</h2><div id="question-section"></div></section>
+<button id="submit-btn">診断スタート</button></div>
+
+<script>
+const traits = ["孤児","幼子","王様","賢者","道化","魔法使い","創造者","破壊者","援助者","戦士","恋人","探究者"];
+const rankSection = document.getElementById("rank-section");
+traits.forEach(t => { rankSection.innerHTML += `<label>${t}：<input type="number" class="rank" name="rank_${t}" min="1" max="12" required></label><br>`; });
+
+const questionSection = document.getElementById("question-section");
+let qid = 1;
+traits.forEach(t => {
+  for (let i = 1; i <= 6; i++) {
+    questionSection.innerHTML += `<label>Q${qid++} [${t}]の質問${i}<select name="q_${t}_${i}" required>
+<option value="">選択</option><option value="5">とても当てはまる</option><option value="4">やや当てはまる</option>
+<option value="3">どちらでもない</option><option value="2">あまり当てはまらない</option><option value="1">まったく当てはまらない</option></select></label><br>`;
+  }
+});
+
+// 重複チェック＆保存
+document.getElementById("submit-btn").addEventListener("click", () => {
+  const inputs = document.querySelectorAll("input, select");
+  const data = JSON.parse(localStorage.getItem("sixsense_data") || "{}");
+  let valid = true, ranks = [];
+
+  inputs.forEach(el => {
+    if (!el.value) valid = false;
+    if (el.classList.contains("rank")) ranks.push(el.value);
+    data[el.name] = el.value;
+  });
+
+  if (new Set(ranks).size !== ranks.length) {
+    alert("順位が重複しています。すべて異なる1〜12の値を入力してください。"); return;
+  }
+  if (!valid) { alert("すべての項目に入力・選択してください。"); return; }
+
+  localStorage.setItem("sixsense_data", JSON.stringify(data));
+  window.location.href = "results_v2_multi.html";
+});
+</script></body></html>

@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8" />
+<title>診断結果（ギャップ分析）</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head>
+<body>
+<div class="container">
+<h1>6sense ギャップ分析</h1>
+<p><strong>氏名：</strong><span id="user-name"></span></p>
+<canvas id="radarChart" width="400" height="400"></canvas>
+<div id="gap-analysis"></div>
+</div>
+
+<script>
+const data = JSON.parse(localStorage.getItem("sixsense_data") || "{}");
+const traits = ["孤児","幼子","王様","賢者","道化","魔法使い","創造者","破壊者","援助者","戦士","恋人","探究者"];
+document.getElementById("user-name").textContent = data.name || "匿名";
+
+const sum = {}, count = {}, avg = {};
+traits.forEach(t => { sum[t]=0; count[t]=0; });
+
+for (const [k,v] of Object.entries(data)) {
+  if (k.startsWith("q_")) {
+    const t = k.split("_")[1]; sum[t]+=parseInt(v); count[t]++;
+  }
+}
+traits.forEach(t => avg[t] = sum[t]/count[t]);
+
+const gaps = traits.map(t => {
+  const cons = parseInt(data["rank_" + t]) || 0;
+  const uncons = avg[t]; const gap = Math.abs((13 - cons) - uncons);
+  return { trait: t, gap, cons, uncons: uncons.toFixed(2) };
+}).sort((a,b)=>b.gap - a.gap);
+
+new Chart(document.getElementById("radarChart"), {
+  type: "radar",
+  data: {
+    labels: traits,
+    datasets: [{
+      label: "潜在スコア",
+      data: traits.map(t => avg[t].toFixed(2)),
+      backgroundColor: "rgba(211,192,135,0.2)",
+      borderColor: "#d3c087"
+    }]
+  },
+  options: { scale: { ticks: { min: 0, max: 5 } } }
+});
+
+document.getElementById("gap-analysis").innerHTML = `
+  <h2>ギャップ分析</h2>
+  <p><strong>ギャップ最大：</strong>${gaps[0].trait}（潜在 ${gaps[0].uncons}／顕在順位 ${gaps[0].cons}）</p>
+  <p><strong>ギャップ最小：</strong>${gaps[gaps.length-1].trait}（潜在 ${gaps[gaps.length-1].uncons}／顕在順位 ${gaps[gaps.length-1].cons}）</p>
+`;
+</script>
+</body></html>

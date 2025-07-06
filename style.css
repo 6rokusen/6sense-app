@@ -1,0 +1,5 @@
+body { font-family: sans-serif; padding: 1rem; background: #fefdf9; color: #333; }
+h1, h2 { border-bottom: 1px solid #ccc; padding-bottom: .3rem; }
+input, select { padding: 0.4rem; margin-top: 0.3rem; border: 1px solid #ccc; border-radius: 5px; }
+button { background: #d3c087; color: #fff; padding: 0.6rem 1.2rem; border: none; border-radius: 5px; cursor: pointer; }
+.container { max-width: 600px; margin: auto; }

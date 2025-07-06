@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8" /><title>Step1: 基本情報入力</title>
+<link rel="stylesheet" href="style.css" /></head><body>
+<div class="container"><h1>6sense診断 - Step 1/2</h1>
+<form id="step1-form">
+<label>氏名：<input type="text" name="name" required /></label><br />
+<label>メール：<input type="email" name="email" /></label><br />
+<label>生年月日：<input type="date" name="birth" required /></label><br />
+<label>性別：<select name="gender"><option>男性</option><option>女性</option><option>その他</option></select></label><br />
+<label>職業：<input type="text" name="job" /></label><br />
+<label>担当コーチLINE ID（任意）：<input type="text" name="lineId" /></label><br />
+<label>ロール選択：<select name="roleType"><option value="personal">個人向け</option><option value="hr">HR向け</option><option value="coach">コーチ用</option></select></label><br />
+<button type="submit">→ 質問に進む</button></form></div>
+<script>
+document.getElementById("step1-form").addEventListener("submit", function(e) {
+e.preventDefault();
+const data = {}; new FormData(this).forEach((v, k) => data[k] = v);
+localStorage.setItem("sixsense_data", JSON.stringify(data));
+window.location.href = "form_step2.html"; });
+</script></body></html>
