@@ -983,15 +983,42 @@ function analyze() {
 // ===== INIT: Run demo if params in URL =====
 window.addEventListener('load', () => {
   const params = new URLSearchParams(window.location.search);
+  
+  // Support URL params: ?name=xxx&year=1941&month=1&day=29
+  const pName = params.get('name');
+  const pYear = params.get('year');
+  const pMonth = params.get('month');
+  const pDay = params.get('day');
+  
   if (params.get('demo')) {
     document.getElementById('inputName').value = '山川亜希子';
     document.getElementById('inputYear').value = '1941';
     document.getElementById('inputMonth').value = '1';
     document.getElementById('inputDay').value = '29';
     analyze();
+  } else if (pYear && pMonth && pDay) {
+    // Auto-fill from URL params and run
+    if (pName) document.getElementById('inputName').value = decodeURIComponent(pName);
+    document.getElementById('inputYear').value = pYear;
+    document.getElementById('inputMonth').value = pMonth;
+    document.getElementById('inputDay').value = pDay;
+    analyze();
+  } else {
+    // Try reading from sessionStorage (set by profile page)
+    try {
+      const stored = sessionStorage.getItem('sixsense_profile');
+      if (stored) {
+        const d = JSON.parse(stored);
+        if (d.name) document.getElementById('inputName').value = d.name;
+        if (d.year) document.getElementById('inputYear').value = d.year;
+        if (d.month) document.getElementById('inputMonth').value = d.month;
+        if (d.day) document.getElementById('inputDay').value = d.day;
+        if (d.year && d.month && d.day) analyze();
+      }
+    } catch(e) {}
   }
   
-  // Also listen for messages from parent page (for integration)
+  // Listen for postMessage from parent page (iframe integration)
   window.addEventListener('message', (e) => {
     if (e.data && e.data.type === 'runAnalysis') {
       const d = e.data;
